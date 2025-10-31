@@ -26,3 +26,7 @@ Simple Android app to add medicines and get reminder notifications.
 - Dark theme + Material3
 - Notification actions: Snooze / Mark taken
 - Unit tests for reminder logic
+
+## Screenshots
+<img src="docs/home.png" width="280"/> <img src="docs/add.png" width="280"/>
+
