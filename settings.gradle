@@ -1,0 +1,2 @@
+rootProject.name = "Medicine Reminder Android App Project"
+include ':app'

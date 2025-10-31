@@ -1,0 +1,112 @@
+apply plugin: 'com.android.application'
+
+import java.util.Properties
+
+// Load signing info from keystore.properties if present (optional)
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    namespace "com.falcon.medicinetime"
+
+    // Dolphin-friendly SDK levels
+    compileSdkVersion 33
+
+    defaultConfig {
+        applicationId "com.falcon.medicinetime"
+        minSdkVersion 21
+        targetSdkVersion 33
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    // Java 8 is fine for this project
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    // Optional convenience
+    buildFeatures {
+        viewBinding true
+    }
+
+    signingConfigs {
+        // Only used if keystore.properties exists (kept out of git)
+        if (keystorePropertiesFile.exists()) {
+            release {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
+            pseudoLocalesEnabled true
+        }
+        debug {
+            debuggable true
+        }
+    }
+
+    // Keep your flavors if you use mock/prod
+    flavorDimensions "default"
+    productFlavors {
+        mock {
+            applicationIdSuffix ".mock"
+            dimension "default"
+        }
+        prod {
+            dimension "default"
+        }
+    }
+
+    // Ignore mockRelease variant
+    variantFilter { variant ->
+        if (variant.buildType.name == 'release'
+                && variant.getFlavors().get(0).name == 'mock') {
+            setIgnore(true)
+        }
+    }
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+
+    // ---- AndroidX UI
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.1'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    // ---- Widgets/libs (explicit versions; no rootProject.ext)
+    implementation 'com.github.sundeepk:compact-calendar-view:3.0.0'
+    implementation 'com.jakewharton:butterknife:10.2.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.1'
+
+    // ---- Testing (explicit versions; no rootProject.ext)
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.5.1') {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    }
+}
